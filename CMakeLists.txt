@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(Digital-Wellbeing-Daemon VERSION 0.1 LANGUAGES CXX)
+project(digitalwellbeing-daemon VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -45,17 +45,17 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(Digital-Wellbeing-Daemon
+    qt_add_executable(digitalwellbeing-daemon
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
 else()
     if(ANDROID)
-        add_library(Digital-Wellbeing-Daemon SHARED
+        add_library(digitalwellbeing-daemon SHARED
             ${PROJECT_SOURCES}
         )
     else()
-        add_executable(Digital-Wellbeing-Daemon
+        add_executable(digitalwellbeing-daemon
           ${PROJECT_SOURCES}
         )
     endif()
@@ -63,18 +63,18 @@ endif()
 
 message(${QT_VERSION_MAJOR})
 
-target_compile_definitions(Digital-Wellbeing-Daemon
+target_compile_definitions(digitalwellbeing-daemon
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
-target_link_libraries(Digital-Wellbeing-Daemon
+target_link_libraries(digitalwellbeing-daemon
   PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::DBus Qt${QT_VERSION_MAJOR}::X11Extras Qt${QT_VERSION_MAJOR}::Sql xcb xcb-ewmh X11)
 
-set_target_properties(Digital-Wellbeing-Daemon PROPERTIES
+set_target_properties(digitalwellbeing-daemon PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_import_qml_plugins(Digital-Wellbeing-Daemon)
-    qt_finalize_executable(Digital-Wellbeing-Daemon)
+    qt_import_qml_plugins(digitalwellbeing-daemon)
+    qt_finalize_executable(digitalwellbeing-daemon)
 endif()
