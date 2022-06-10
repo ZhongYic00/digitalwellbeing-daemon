@@ -25,23 +25,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #endif()
 
 find_package(QT NAMES Qt5 Qt6 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core DBus X11Extras Sql REQUIRED)
-find_package(X11 REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core DBus Sql REQUIRED)
 find_package(DtkCore REQUIRED)
-find_package(DtkWidget REQUIRED)
-include(FindPkgConfig)
-pkg_check_modules(XCB xcb REQUIRED)
+#include(FindPkgConfig)
+#pkg_check_modules(XCB xcb REQUIRED)
 #pkg_check_modules(DCore REQUIRED I.MPORTED_TARGET dtkcore)
 #pkg_check_modules(DWidget REQUIRED IMPORTED_TARGET dtkwidget)
 
-set(PROJECT_SOURCES
-        main.cpp
-        eventmonitor.cpp eventmonitor.h
-        logger.h logger.cpp
-        usagestatitem.h usagestatitem.cpp
-        appinfo.h appinfo.cpp
-        dbushelper.h
-        dbusinterface.h dbusinterface.cpp
+file(GLOB PROJECT_SOURCES
+        "src/*.cpp" "src/*.h"
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -66,7 +58,7 @@ message(${QT_VERSION_MAJOR})
 target_compile_definitions(digitalwellbeing-daemon
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(digitalwellbeing-daemon
-  PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::DBus Qt${QT_VERSION_MAJOR}::X11Extras Qt${QT_VERSION_MAJOR}::Sql xcb xcb-ewmh X11)
+  PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::DBus Qt${QT_VERSION_MAJOR}::Sql)
 
 set_target_properties(digitalwellbeing-daemon PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

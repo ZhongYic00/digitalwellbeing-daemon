@@ -2,11 +2,14 @@
 #include <iostream>
 #include <QDebug>
 #include <QFile>
+#include "dbushelper.h"
+#include "appinfo.h"
+
+#ifdef X11MANUAL
 #include <X11/Xlib.h>
 #include <QtX11Extras/QX11Info>
 #include <xcb/xcb_ewmh.h>
-#include "dbushelper.h"
-#include "appinfo.h"
+#endif
 
 EventMonitor::EventMonitor(QObject *parent) : QObject(parent)
 {

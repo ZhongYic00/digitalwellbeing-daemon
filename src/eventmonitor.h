@@ -2,13 +2,13 @@
 #define EVENTMONITOR_H
 
 #include <QObject>
-#include <xcb/xcb.h>
 #include "appinfo.h"
 //#include <QDBusAbstractAdaptor>
 //#include <QDBusConnection>
 //#include <X11/Xlib.h>
 
 #ifdef X11MANUAL
+#include <xcb/xcb.h>
 class EventMonitor : public QObject
 {
     Q_OBJECT
