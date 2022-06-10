@@ -36,6 +36,7 @@ file(GLOB PROJECT_SOURCES
         "src/*.cpp" "src/*.h"
 )
 
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(digitalwellbeing-daemon
         MANUAL_FINALIZATION
@@ -65,6 +66,11 @@ set_target_properties(digitalwellbeing-daemon PROPERTIES
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
 )
+
+set(CMAKE_INSTALL_PREFIX "/usr")
+install(FILES src/dbusservices/org.deepin.dde.digitalWellbeing.service
+        DESTINATION /usr/share/dbus-1/services)
+install(TARGETS digitalwellbeing-daemon DESTINATION bin)
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_import_qml_plugins(digitalwellbeing-daemon)
