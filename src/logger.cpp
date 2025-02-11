@@ -3,7 +3,7 @@
 #include <iostream>
 //#include <DtkCores>
 #include "appinfo.h"
-#include <DDBusSender>
+// #include <DDBusSender>
 
 Logger::Logger():
     dataDirPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)),

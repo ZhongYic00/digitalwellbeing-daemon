@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     QDBusConnection dbus=QDBusConnection::sessionBus();
     AppInfo lstApp;
     const auto writelog=[&logger](QDateTime lst,QDateTime cur,AppInfo app){
-        std::cout<<"last running:"<<app.id().toStdString()<<" "<<app.name().toStdString()<<"from"<<lst.toString().toStdString()<<"to"<<cur.toString().toStdString()<<std::endl;
+        std::cout<<"last running:"<<app.id().toStdString()<<" "<<app.name().toStdString()<<" from "<<lst.toString().toStdString()<<" to "<<cur.toString().toStdString()<<std::endl;
         logger.appendRecord({app.id(),lst,cur});
     };
     QObject::connect(&monitor,&EventMonitor::activeApplicationTrans,[&writelog,&lst,&lstApp](AppInfo lastApp,AppInfo currentApp){

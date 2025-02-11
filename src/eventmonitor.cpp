@@ -48,7 +48,7 @@ EventMonitor::EventMonitor(QObject *parent) : QObject(parent)
 //    QDBusConnection sessionBus=QDBusConnection::sessionBus();
 //    sessionBus.registerService("org.deepin.dde.digitalWellbeing");
 //    std::cout<<"register"<<sessionBus.registerObject("/org/deepin/dde","org.deepin.dde.digitalWellbeing",this,QDBusConnection::ExportAllSlots|QDBusConnection::ExportAllSignals)<<std::endl;
-    std::cout<< QDBusConnection::sessionBus().connect("","/com/deepin/dde/lockFront","com.deepin.dde.lockFront",
+    std::cout<< QDBusConnection::sessionBus().connect("com.deepin.dde.lockFront","/com/deepin/dde/lockFront","com.deepin.dde.lockFront",
                                                       "Visible",
                                                       this, SLOT(handleLock(bool)));
     std::cout<<QDBusConnection::sessionBus().connect("org.ayatana.bamf","/org/ayatana/bamf/matcher","org.ayatana.bamf.matcher","ActiveApplicationChanged",this,SLOT(activeApplicationChange(QString,QString)));

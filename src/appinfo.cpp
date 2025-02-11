@@ -12,17 +12,17 @@ void AppInfo::setDesktopFile(QString desktopFile){
 }
 AppInfo AppInfo::getAppInfoFromBAMFPath(QString path){
     if(!path.length())return  AppInfo();
-//    qWarning()<<"getAppInfoFromBAMF::"<<path;
+//    qDebug()<<"getAppInfoFromBAMF::"<<path;
     QString desktopFile=dcall(QDBusMessage::createMethodCall("org.ayatana.bamf",path,"org.ayatana.bamf.application","DesktopFile"),{QVariant("")}).takeFirst().toString();
     if(!desktopFile.length()){
         const auto &args=dcall(QDBusMessage::createMethodCall("org.ayatana.bamf",path,"org.ayatana.bamf.view","Children"),{QStringList()}).first().toStringList();
-        qWarning()<<args;
+        qDebug()<<"view.children"<<args;
         for(QString subpath:args){
             uint32_t pid=dcall(QDBusMessage::createMethodCall("org.ayatana.bamf",subpath,"org.ayatana.bamf.window","GetPid"),{QVariant(0)}).first().toUInt();
             QFile environ("/proc/"+QString::number(pid)+"/environ");
             environ.open(QIODevice::ReadOnly);
             auto env=environ.readAll().split('\x00');
-            qWarning()<<subpath<<" pid="<<pid;//<<" environ:"<<env;
+            qDebug()<<subpath<<" pid="<<pid;//<<" environ:"<<env;
             for(auto kv:env){
                 auto key=kv.left(kv.indexOf('='));
                 if(key=="GIO_LAUNCHED_DESKTOP_FILE")
@@ -38,17 +38,55 @@ AppInfo AppInfo::getAppInfoFromBAMFPath(QString path){
 AppInfo AppInfo::getAppInfoFromId(QString id){
     return AppInfo(id);
 }
-void AppInfo::getAppInfoFromLauncher(){
-    auto msg=QDBusMessage::createMethodCall("com.deepin.dde.daemon.Launcher","/com/deepin/dde/daemon/Launcher","com.deepin.dde.daemon.Launcher","GetItemInfo");
-    msg<<m_id;
-    auto resp=dcall(msg,{});
-    if(!resp.length()){
-        m_name=m_id;
-        return;
+
+// from https://github.com/linuxdeepin/dde-application-manager/blob/master/src/global.h
+inline QString escapeToObjectPath(const QString &str)
+{
+    if (str.isEmpty()) {
+        return "_";
     }
-    const auto &args=resp.takeFirst().value<QDBusArgument>();
-    args.beginStructure();
-    QString id;
-    args>>m_desktopFile>>m_name>>id>>m_icon>>m_category>>m_timeInstalled;
-    args.endStructure();
+
+    auto ret = str;
+    QRegularExpression re{R"([^a-zA-Z0-9])"};
+    auto matcher = re.globalMatch(ret);
+    while (matcher.hasNext()) {
+        auto replaceList = matcher.next().capturedTexts();
+        replaceList.removeDuplicates();
+        for (const auto &c : replaceList) {
+            auto hexStr = QString::number(static_cast<uint>(c.front().toLatin1()), 16);
+            ret.replace(c, QString{R"(_%1)"}.arg(hexStr));
+        }
+    }
+    return ret;
+}
+
+void AppInfo::getAppInfoFromLauncher(){
+    // auto msg=QDBusMessage::createMethodCall("com.deepin.dde.daemon.Launcher","/com/deepin/dde/daemon/Launcher","com.deepin.dde.daemon.Launcher","GetItemInfo");
+    // msg<<m_id;
+    auto readProp = [&](QString prop){
+        QDBusInterface iface("org.desktopspec.ApplicationManager1","/org/desktopspec/ApplicationManager1/"+escapeToObjectPath(m_id),"org.freedesktop.DBus.Properties");
+        auto resp= iface.call("Get","org.desktopspec.ApplicationManager1.Application",prop);
+        // qDebug()<<"resp="<<resp<<resp.arguments().first();
+        auto dbusArg = resp.arguments().first().value<QDBusVariant>();
+        // 解析嵌套的variant结构
+        QVariant innerVariant = dbusArg.variant();
+        // 解析最终的a{ss}结构（字符串字典）
+        QMap<QString, QString> resultMap;
+        if (innerVariant.userType() == qMetaTypeId<QDBusArgument>()) {
+            QDBusArgument mapArg = innerVariant.value<QDBusArgument>();
+            mapArg >> resultMap;
+        } else if (innerVariant.canConvert(QMetaType::QVariantMap)) {
+            QVariantMap vm = innerVariant.toMap();
+            for (auto it = vm.begin(); it != vm.end(); ++it) {
+                resultMap.insert(it.key(), it.value().toString());
+            }
+        }
+
+        // 现在resultMap包含{"default": "Microsoft Edge (dev)"}
+        qDebug() << "Extracted map:" << resultMap;
+        return resultMap;
+    };
+    m_name = readProp("Name").value("default",m_id);
+    m_icon = readProp("Icons").value("Desktop Entry","unknown");
+    // qDebug()<<"name="<<m_name;
 }
