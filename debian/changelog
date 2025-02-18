@@ -1,8 +1,12 @@
-digitalwellbeing-daemon (0.2.0) UNRELEASED; urgency=medium
+digitalwellbeing-daemon (0.2.1) UNRELEASED; urgency=medium
 
+  [ unknown ]
   * Dev version 0.2.0
 
- -- unknown <rubbishzyc@outlook.com>  Tue, 11 Feb 2025 16:26:35 +0800
+  [ Yicheng Zhong ]
+  * canonicalize dbus & systemd service files
+
+ -- Yicheng Zhong <rubbishzyc@outlook.com>  Tue, 18 Feb 2025 21:26:46 +0800
 
 digitalwellbeing-daemon (0.1.0) unstable; urgency=medium
 

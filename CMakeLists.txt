@@ -68,8 +68,27 @@ set_target_properties(digitalwellbeing-daemon PROPERTIES
 )
 
 set(CMAKE_INSTALL_PREFIX "/usr")
-install(FILES src/dbusservices/org.deepin.dde.digitalWellbeing.service
-        DESTINATION /usr/share/dbus-1/services)
+
+if (NOT DEFINED SYSTEMD_USER_UNIT_DIR)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(Systemd REQUIRED systemd)
+    pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
+endif()
+
+configure_file(
+    src/dbus/org.deepin.dde.digitalWellbeing.service.in
+    ${CMAKE_CURRENT_BINARY_DIR}/org.deepin.dde.digitalWellbeing.service
+    @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.deepin.dde.digitalWellbeing.service
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/dbus-1/services)
+
+configure_file(
+    src/systemd/org.deepin.dde.digitalWellbeing.service.in
+    ${CMAKE_CURRENT_BINARY_DIR}/org.deepin.dde.digitalWellbeing.service
+    @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.deepin.dde.digitalWellbeing.service
+    DESTINATION ${SYSTEMD_USER_UNIT_DIR})
+
 install(TARGETS digitalwellbeing-daemon DESTINATION bin)
 
 if(QT_VERSION_MAJOR EQUAL 6)
