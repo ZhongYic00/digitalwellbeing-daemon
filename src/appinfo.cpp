@@ -1,5 +1,6 @@
 #include "appinfo.h"
 #include "dbushelper.h"
+#include <QLocale>
 
 AppInfo::AppInfo(QString id):m_id(id){
     getAppInfoFromLauncher();
@@ -61,12 +62,9 @@ inline QString escapeToObjectPath(const QString &str)
 }
 
 void AppInfo::getAppInfoFromLauncher(){
-    // auto msg=QDBusMessage::createMethodCall("com.deepin.dde.daemon.Launcher","/com/deepin/dde/daemon/Launcher","com.deepin.dde.daemon.Launcher","GetItemInfo");
-    // msg<<m_id;
     auto readProp = [&](QString prop){
         QDBusInterface iface("org.desktopspec.ApplicationManager1","/org/desktopspec/ApplicationManager1/"+escapeToObjectPath(m_id),"org.freedesktop.DBus.Properties");
         auto resp= iface.call("Get","org.desktopspec.ApplicationManager1.Application",prop);
-        // qDebug()<<"resp="<<resp<<resp.arguments().first();
         auto dbusArg = resp.arguments().first().value<QDBusVariant>();
         // 解析嵌套的variant结构
         QVariant innerVariant = dbusArg.variant();
@@ -86,7 +84,8 @@ void AppInfo::getAppInfoFromLauncher(){
         qDebug() << "Extracted map:" << resultMap;
         return resultMap;
     };
-    m_name = readProp("Name").value("default",m_id);
+    auto names = readProp("Name");
+    m_name = names.value(QLocale::system().name(),
+        names.value("default",m_id));
     m_icon = readProp("Icons").value("Desktop Entry","unknown");
-    // qDebug()<<"name="<<m_name;
 }
