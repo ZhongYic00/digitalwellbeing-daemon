@@ -47,11 +47,11 @@ EventMonitor::EventMonitor(QObject *parent) : QObject(parent)
 //    new EventMonitorAdaptor(this);
 //    QDBusConnection sessionBus=QDBusConnection::sessionBus();
 //    sessionBus.registerService("org.deepin.dde.digitalWellbeing");
-//    std::cout<<"register"<<sessionBus.registerObject("/org/deepin/dde","org.deepin.dde.digitalWellbeing",this,QDBusConnection::ExportAllSlots|QDBusConnection::ExportAllSignals)<<std::endl;
-    std::cout<< QDBusConnection::sessionBus().connect("com.deepin.dde.lockFront","/com/deepin/dde/lockFront","com.deepin.dde.lockFront",
+//    qInfo()<<"register"<<sessionBus.registerObject("/org/deepin/dde","org.deepin.dde.digitalWellbeing",this,QDBusConnection::ExportAllSlots|QDBusConnection::ExportAllSignals);
+    qInfo()<< QDBusConnection::sessionBus().connect("com.deepin.dde.lockFront","/com/deepin/dde/lockFront","com.deepin.dde.lockFront",
                                                       "Visible",
                                                       this, SLOT(handleLock(bool)));
-    std::cout<<QDBusConnection::sessionBus().connect("org.ayatana.bamf","/org/ayatana/bamf/matcher","org.ayatana.bamf.matcher","ActiveApplicationChanged",this,SLOT(activeApplicationChange(QString,QString)));
+    qInfo()<<QDBusConnection::sessionBus().connect("org.ayatana.bamf","/org/ayatana/bamf/matcher","org.ayatana.bamf.matcher","ActiveApplicationChanged",this,SLOT(activeApplicationChange(QString,QString)));
 }
 EventMonitor::~EventMonitor(){
 #ifdef X11MANUAL
@@ -59,17 +59,17 @@ EventMonitor::~EventMonitor(){
 #endif
 }
 void EventMonitor::activeApplicationChange(QString a,QString b){
-    std::cerr<<"activeApplicationChange::"<<a.toStdString()<<","<<b.toStdString()<<"\n";
-    std::cerr<<"info: "<<AppInfo::getAppInfoFromBAMFPath(a).name().toStdString()<<' '<<AppInfo::getAppInfoFromBAMFPath(b).name().toStdString()<<"\n";
+    qDebug()<<"activeApplicationChange::"<<a<<","<<b<<"\n";
+    qDebug()<<"info: "<<AppInfo::getAppInfoFromBAMFPath(a).name()<<' '<<AppInfo::getAppInfoFromBAMFPath(b).name()<<"\n";
     if(a.length()&&b.length())emit activeApplicationTrans(AppInfo::getAppInfoFromBAMFPath(a),AppInfo::getAppInfoFromBAMFPath(b));
     else if(a.length())emit applicationUnfocused(AppInfo::getAppInfoFromBAMFPath(a));
     else if(b.length())emit applicationFocused(AppInfo::getAppInfoFromBAMFPath(b));
 }
 void EventMonitor::activeWindowChange(QString a,QString b){
-    std::cerr<<"activeWindowChange::"<<a.toStdString()<<b.toStdString()<<"\n";
+    qDebug()<<"activeWindowChange::"<<a<<b<<"\n";
 }
 void EventMonitor::handleLock(bool b){
-    std::cerr<<"lockfront change detected"<<b<<std::endl;
+    qInfo()<<"lockfront change detected"<<b;
     if(b)emit applicationFocused(AppInfo("dde-lock","dde-lock"));
     else emit applicationUnfocused(AppInfo("dde-lock","dde-lock"));
 }
@@ -135,7 +135,7 @@ EventMonitor::AppInfo EventMonitor::getCurrentApp(){
     const auto get_Property=[&](const xcb_atom_t& atom, xcb_window_t w)
     {
         uint64_t rt=get_property<unsigned long>(w,atom);
-        std::cerr<<"xcb get_property("<<w<<','<<atom<<")="<<rt<<"\n";
+        qDebug()<<"xcb get_property("<<w<<','<<atom<<")="<<rt<<"\n";
         Atom actual_type;
         int actual_format, status;
         unsigned long nitems, bytes_after;
@@ -145,7 +145,7 @@ EventMonitor::AppInfo EventMonitor::getCurrentApp(){
         if(status!=Success)
             return 0ul;
         rt=static_cast<unsigned long>(prop[0] + (prop[1] << 8) + (prop[2] << 16) + (prop[3] << 24));
-        std::cerr<<"X11 getProperty()="<<(int)prop[0]<<std::endl;
+        qDebug()<<"X11 getProperty()="<<(int)prop[0];
         return rt;
     };
 
@@ -154,15 +154,15 @@ EventMonitor::AppInfo EventMonitor::getCurrentApp(){
     xcb_ewmh_init_atoms(conn,&ewmhconn);
     auto reply=xcb_ewmh_get_active_window(&ewmhconn,0);
     xcb_ewmh_get_active_window_reply(&ewmhconn,reply,&wid,nullptr);
-    std::cerr<<"ewmh: "<<wid<<"\n";
+    qDebug()<<"ewmh: "<<wid<<"\n";
     if(!wid){
-        std::cerr<<"error: wid=0"<<std::endl;
+        qDebug()<<"error: wid=0";
         return {"",0,0};
     }
     uint32_t pid = get_Property(window_pid_atom,wid);
-    std::cerr<<"x11 pid:"<<pid<<"\n";
+    qDebug()<<"x11 pid:"<<pid<<"\n";
     xcb_ewmh_get_wm_pid_reply(&ewmhconn,xcb_ewmh_get_wm_pid(&ewmhconn,wid),&pid,nullptr);
-    std::cerr<<"ewmh pid:"<<pid<<"\n";
+    qDebug()<<"ewmh pid:"<<pid<<"\n";
 
     if(!pid)
         return {"",0,0};

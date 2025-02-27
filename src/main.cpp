@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     for(auto i:res){
         Jarray.append(i.toJSON());
     }
-    std::cout<<QJsonDocument(Jarray).toJson().toStdString();
+    qDebug()<<QJsonDocument(Jarray).toJson();
     auto records=logger.readDailyRecord();
     QMap<QString,qint64> summary;
     for(auto item:records){
@@ -37,10 +37,10 @@ int main(int argc, char *argv[])
         QJsonObject obj;
         obj.insert("name",item.first);
         obj.insert("time",item.second);
-        std::cout<<item.first.toStdString()<<std::endl;
+        qDebug()<<item.first;
         jarray.append(obj);
     }
-    std::cout<<QJsonDocument(jarray).toJson().toStdString()<<std::endl;
+    qDebug()<<QJsonDocument(jarray).toJson();
     return 0;
 #endif
 
@@ -58,33 +58,33 @@ int main(int argc, char *argv[])
     QDBusConnection dbus=QDBusConnection::sessionBus();
     AppInfo lstApp;
     const auto writelog=[&logger](QDateTime lst,QDateTime cur,AppInfo app){
-        std::cout<<"last running:"<<app.id().toStdString()<<" "<<app.name().toStdString()<<" from "<<lst.toString().toStdString()<<" to "<<cur.toString().toStdString()<<std::endl;
+        qDebug()<<"last running:"<<app.id()<<" "<<app.name()<<" from "<<lst.toString()<<" to "<<cur.toString();
         logger.appendRecord({app.id(),lst,cur});
     };
     QObject::connect(&monitor,&EventMonitor::activeApplicationTrans,[&writelog,&lst,&lstApp](AppInfo lastApp,AppInfo currentApp){
-        std::cout<<"active application trans:"<<lastApp.id().toStdString()<<','<<currentApp.id().toStdString()<<std::endl;
+        qDebug()<<"active application trans:"<<lastApp.id()<<','<<currentApp.id();
         auto cur = QDateTime::currentDateTimeUtc();
         if(cur.toSecsSinceEpoch()-lst.toSecsSinceEpoch()>2)writelog(lst,cur,lastApp);
         lst = cur;
         lstApp = currentApp;
     });
     QObject::connect(&monitor,&EventMonitor::applicationUnfocused,[&writelog,&lst,&lstApp](AppInfo lastApp){
-        std::cout<<"application unfocused:"<<lastApp.id().toStdString()<<std::endl;
+        qDebug()<<"application unfocused:"<<lastApp.id();
         auto cur = QDateTime::currentDateTimeUtc();
         if(cur.toSecsSinceEpoch()-lst.toSecsSinceEpoch()>2)writelog(lst,cur,lastApp);
         lst = cur;
         lstApp = AppInfo();
     });
     QObject::connect(&monitor,&EventMonitor::applicationFocused,[&writelog,&lst,&lstApp](AppInfo curApp){
-        std::cout<<"application focused:"<<curApp.id().toStdString()<<std::endl;
+        qDebug()<<"application focused:"<<curApp.id();
         auto cur = QDateTime::currentDateTimeUtc();
         if(cur.toSecsSinceEpoch()-lst.toSecsSinceEpoch()>2)writelog(lst,cur,lstApp);
         lst = cur;
         lstApp = curApp;
     });
-//    std::cout<<"dbus bamf"<<dbus.connect("org.ayatana.bamf","/org/ayatana/bamf/matcher","org.ayatana.bamf.matcher","ActiveWindowChanged",&monitor,SLOT(activeWindowChange(QString,QString)))<<std::endl;
+//    qDebug()<<"dbus bamf"<<dbus.connect("org.ayatana.bamf","/org/ayatana/bamf/matcher","org.ayatana.bamf.matcher","ActiveWindowChanged",&monitor,SLOT(activeWindowChange(QString,QString)));
 #ifndef RELEASE
-    std::cout<<"running"<<std::endl;
+    qDebug()<<"running";
 #endif
     return app.exec();
 }

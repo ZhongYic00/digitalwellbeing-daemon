@@ -18,7 +18,7 @@ Logger::Logger():
     db.setDatabaseName(dailyLogPath);
     db.open();
     executor=QSqlQuery(db);
-    std::cout << db.databaseName().toStdString() << std::endl;
+    qInfo() << db.databaseName();
     executor.exec("CREATE TABLE IF NOT EXISTS EventsRaw(appid text,tstart int,tend int)");
     executor.exec("CREATE VIEW IF NOT EXISTS EventsDaily AS select appid,max(0,tstart-strftime('%s',datetime('now','localtime','start of day','utc'))) as tsoff,tend-strftime('%s',datetime('now','localtime','start of day','utc')) as teoff from EventsRaw where teoff>=0");
     executor.exec("CREATE VIEW IF NOT EXISTS PerAppSumDaily AS select appid,sum(teoff-tsoff) AS time,count(appid) AS freq FROM EventsDaily GROUP BY appid ORDER BY time DESC");
@@ -26,15 +26,15 @@ Logger::Logger():
     while(executor.next()){
         qDebug()<<executor.value(0).toString();
     }
-    std::cerr<<"Logger::Logger() dailyLogPath="<<dailyLogPath.toStdString()<<std::endl;
+    qDebug()<<"Logger::Logger() dailyLogPath="<<dailyLogPath;
 }
 void Logger::appendRecord(const UsageStatItem &item){
-    std::cerr<<"Logger::appendRecord()"<<std::endl;
+    qDebug()<<"Logger::appendRecord()";
     executor.prepare("insert into EventsRaw values(:appid,:tstart,:tend)");
     executor.bindValue(":appid",item.appName);
     executor.bindValue(":tstart",item.begin.toTime_t());
     executor.bindValue(":tend",item.end.toTime_t());
-    std::cerr<<"appendRecord::"<<executor.exec();
+    qDebug()<<"appendRecord::"<<executor.exec();
 }
 QJsonArray Logger::readDailyRecordJson(){
     QJsonArray rt;
